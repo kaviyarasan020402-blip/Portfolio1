@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Kaviyarasan Portfolio</title>
+<style>
+  :root{
+    --bg:#0B0B0F; --panel:#15151C; --panel2:#121218; --line:#232330;
+    --text:#EDEFF2; --muted:#8A8F9C; --accent:#7C5CFC; --accent2:#6647E0;
+    --ok:#22D3B8; --err:#FF6A55;
+  }
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg); color:var(--text); font-family:'Segoe UI', Arial, sans-serif;
+    max-width:760px; margin:0 auto; padding:32px 20px 80px;
+  }
+  h1{font-size:1.5rem; margin:0 0 4px;}
+  p.hint{color:var(--muted); font-size:0.9rem; margin:0 0 20px;}
+  .bar{
+    display:flex; justify-content:space-between; align-items:center; gap:12px;
+    background:var(--panel2); border:1px solid var(--line); border-radius:8px;
+    padding:12px 16px; font-size:0.82rem; color:var(--muted); margin-bottom:22px; flex-wrap:wrap;
+  }
+  .bar a{color:var(--accent); text-decoration:none; font-weight:600;}
+  .bar a:hover{text-decoration:underline;}
+
+  .tabs{display:flex; gap:4px; border-bottom:1px solid var(--line); margin-bottom:26px;}
+  .tab-btn{
+    background:none; border:none; color:var(--muted); font-size:0.92rem; font-weight:600;
+    padding:10px 16px; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px;
+  }
+  .tab-btn.active{color:var(--text); border-bottom-color:var(--accent);}
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:24px; margin-bottom:24px;}
+  .card h2{font-size:1.05rem; margin:0 0 6px;}
+  .note{
+    background:rgba(124,92,252,0.1); border:1px solid rgba(124,92,252,0.35);
+    color:#C9BFFF; border-radius:6px; padding:10px 12px; font-size:0.84rem; margin-bottom:18px;
+  }
+
+  label{display:block; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.03em; color:var(--muted); margin:16px 0 6px;}
+  label:first-of-type{margin-top:0;}
+  input[type="text"], input[type="url"], textarea, select{
+    width:100%; padding:11px 12px; background:var(--panel2); border:1px solid var(--line);
+    color:var(--text); border-radius:6px; font-size:0.95rem; font-family:inherit;
+  }
+  textarea{resize:vertical; min-height:64px;}
+  input:focus, textarea:focus, select:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(124,92,252,0.18);}
+  .file-drop{
+    border:1.5px dashed var(--line); border-radius:6px; padding:16px; text-align:left;
+    cursor:pointer; position:relative; background:var(--panel2);
+  }
+  .file-drop:hover{border-color:var(--accent);}
+  .file-drop input[type="file"]{position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%;}
+  .file-drop .fd-title{font-size:0.92rem; font-weight:600; display:flex; align-items:center; gap:8px;}
+  .file-drop .fd-sub{font-size:0.8rem; color:var(--muted); margin-top:2px;}
+  .file-drop.has-file{border-color:var(--ok);}
+  .sub-hint{font-size:0.78rem; color:var(--muted); margin-top:6px;}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  @media (max-width:560px){ .row2{grid-template-columns:1fr;} }
+
+  .btn{
+    border:none; border-radius:6px; padding:12px 22px; font-weight:700; font-size:0.92rem;
+    cursor:pointer; transition:opacity .15s ease, transform .1s ease;
+  }
+  .btn:active{transform:scale(.97);}
+  .btn-primary{background:var(--accent); color:#fff;}
+  .btn-primary:hover{background:var(--accent2);}
+  .btn-ghost{background:transparent; color:var(--text); border:1px solid var(--line);}
+  .btn-ghost:hover{border-color:var(--accent); color:var(--accent);}
+  .btn-row{display:flex; gap:10px; margin-top:22px; flex-wrap:wrap;}
+  .btn[disabled]{opacity:0.55; cursor:default;}
+
+  #msg{margin-top:14px; font-size:0.86rem; display:none;}
+  #msg.show{display:block;}
+  #msg.ok{color:var(--ok);}
+  #msg.err{color:var(--err);}
+
+  table{width:100%; border-collapse:collapse; margin-top:6px; font-size:0.86rem;}
+  th, td{text-align:left; padding:9px 6px; border-bottom:1px solid var(--line); vertical-align:middle;}
+  th{color:var(--muted); font-weight:600; font-size:0.76rem; text-transform:uppercase; letter-spacing:0.03em;}
+  td.thumb-cell img{width:36px; height:36px; object-fit:cover; border-radius:4px; display:block;}
+  .row-actions{display:flex; gap:6px;}
+  .mini-btn{
+    background:var(--panel2); color:var(--text); border:1px solid var(--line); border-radius:4px;
+    padding:5px 10px; font-size:0.76rem; cursor:pointer;
+  }
+  .mini-btn:hover{border-color:var(--accent); color:var(--accent);}
+  .mini-btn.danger:hover{border-color:var(--err); color:var(--err);}
+  .empty-row td{color:var(--muted); text-align:center; padding:22px 0;}
+
+  .photo-row{display:flex; align-items:center; gap:14px; background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:12px 14px; margin-top:14px;}
+  .photo-row img{width:56px; height:56px; border-radius:8px; object-fit:cover; flex:none;}
+  .photo-row .pr-title{font-weight:700; font-size:0.9rem;}
+  .photo-row .pr-sub{font-size:0.78rem; color:var(--muted);}
+
+  .data-actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;}
+  footer.foot{margin-top:34px; text-align:center; font-size:0.78rem; color:var(--muted);}
+  a.home-link{color:var(--accent); text-decoration:none;}
+</style>
+</head>
+<body>
+
+<h1>Admin</h1>
+<p class="hint">Add posters, reels and your profile photo here — they save straight to this browser and show on the home page.</p>
+
+<div class="bar">
+  <span id="storageUsage">Currently using … of this browser's storage.</span>
+  <a href="index.html?preview=1" target="_blank">View site (preview) ↗</a>
+</div>
+<p class="sub-hint" id="quotaNote" style="display:none; margin-top:-16px; margin-bottom:22px;"></p>
+
+<div class="tabs">
+  <button class="tab-btn active" data-tab="work">Poster / Work</button>
+  <button class="tab-btn" data-tab="videos">Videos</button>
+  <button class="tab-btn" data-tab="photo">Profile Photo</button>
+</div>
+
+<!-- ===================== Poster / Work panel ===================== -->
+<div class="panel active" id="panel-work">
+  <div class="card">
+    <h2 id="workFormTitle">Add a new work item</h2>
+    <form id="workForm">
+      <input type="hidden" id="work_id">
+
+      <label for="work_title">Title</label>
+      <input type="text" id="work_title" required placeholder="e.g. Diwali Sale Poster">
+
+      <label for="work_category">Category</label>
+      <select id="work_category">
+        <option>Posters</option>
+        <option>Branding</option>
+        <option>Thumbnails</option>
+        <option>Social Media</option>
+        <option>Flyers</option>
+        <option value="__other__">Other…</option>
+      </select>
+      <input type="text" id="work_category_other" placeholder="Custom category" style="margin-top:8px; display:none;">
+
+      <label>Image</label>
+      <div class="file-drop" id="workDrop">
+        <div class="fd-title"><span>⬆</span> <span id="workFileLabel">Choose an image, or drag one here</span></div>
+        <div class="fd-sub">No file chosen yet</div>
+        <input type="file" id="work_image_file" accept=".jpg,.jpeg,.png,.webp,.svg">
+      </div>
+      <p class="sub-hint">Uploads are resized automatically. Or paste a path/URL below instead.</p>
+      <input type="text" id="work_image_path" placeholder="assets/img/project-07.jpg (optional if uploading above)">
+
+      <label for="work_description">Description</label>
+      <textarea id="work_description" placeholder="A short line about this project."></textarea>
+
+      <div class="btn-row">
+        <button type="submit" class="btn btn-primary" id="workSubmitBtn">Add Work →</button>
+        <button type="button" class="btn btn-ghost" id="workCancelBtn" style="display:none;">Cancel edit</button>
+      </div>
+      <div id="workMsg"></div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Current work items</h2>
+    <table>
+      <thead><tr><th></th><th>Title</th><th>Category</th><th></th></tr></thead>
+      <tbody id="workTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===================== Videos panel ===================== -->
+<div class="panel" id="panel-videos">
+  <div class="card">
+    <h2 id="videoFormTitle">Add a new video</h2>
+    <form id="videoForm">
+      <input type="hidden" id="video_id">
+
+      <label for="video_title">Title</label>
+      <input type="text" id="video_title" required placeholder="e.g. Brand Reel 2026">
+
+      <label for="video_category">Category label</label>
+      <input type="text" id="video_category" placeholder="Video Editing" value="Reel">
+
+      <label>Video file</label>
+      <div class="file-drop" id="videoDrop">
+        <div class="fd-title"><span>⬆</span> <span id="videoFileLabel">Choose a video file, or drag one here</span></div>
+        <div class="fd-sub">No file chosen yet</div>
+        <input type="file" id="video_file" accept=".mp4,.mov,.webm">
+      </div>
+      <p class="sub-hint">Uploaded videos are stored as files in this browser (IndexedDB) — big clips are fine, often up to several hundred MB or more depending on free space on this device. Mobile browsers (especially iOS Safari) may allow much less — the storage bar at the top shows how much room is left. If saving fails, compress the video or use the path field below instead.</p>
+      <div id="videoSizeNote" class="sub-hint" style="display:none;"></div>
+      <input type="text" id="video_path" placeholder="Or paste a path/URL instead, e.g. assets/videos/video-05.mp4 or an Instagram link">
+
+      <label>Thumbnail image (optional)</label>
+      <div class="file-drop" id="thumbDrop">
+        <div class="fd-title"><span>⬆</span> <span id="thumbFileLabel">Choose a thumbnail, or drag one here</span></div>
+        <div class="fd-sub">No file chosen yet</div>
+        <input type="file" id="thumb_file" accept=".jpg,.jpeg,.png,.webp">
+      </div>
+      <input type="text" id="thumb_path" placeholder="Or paste a path instead, e.g. assets/img/video-05.jpg" style="margin-top:8px;">
+
+      <label for="video_duration">Duration label</label>
+      <input type="text" id="video_duration" placeholder="e.g. 00:45">
+
+      <div class="btn-row">
+        <button type="submit" class="btn btn-primary" id="videoSubmitBtn">Add Video →</button>
+        <button type="button" class="btn btn-ghost" id="videoCancelBtn" style="display:none;">Cancel edit</button>
+      </div>
+      <div id="videoMsg"></div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Current videos</h2>
+    <table>
+      <thead><tr><th></th><th>Title</th><th>Category</th><th></th></tr></thead>
+      <tbody id="videoTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===================== Profile Photo panel ===================== -->
+<div class="panel" id="panel-photo">
+  <div class="card">
+    <h2>Home page photo</h2>
+    <div class="note">This is the photo shown in the hero "poster" frame on the home page, next to the Branding / Poster Design chips. Upload a portrait photo — it's cropped to fit automatically.</div>
+
+    <label>Photo</label>
+    <div class="file-drop" id="photoDrop">
+      <div class="fd-title"><span>⬆</span> <span id="photoFileLabel">Choose a photo, or drag one here</span></div>
+      <div class="fd-sub">No file chosen yet</div>
+      <input type="file" id="photo_file" accept=".jpg,.jpeg,.png,.webp">
+    </div>
+    <p class="sub-hint">Uploads are resized automatically. A clear, well-lit portrait works best.</p>
+
+    <div class="photo-row">
+      <img id="currentPhotoImg" src="assets/img/kaviyarasan.jpg" alt="Current photo">
+      <div>
+        <div class="pr-title">Current photo</div>
+        <div class="pr-sub">Shown on the home page for visitors on this browser.</div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button type="button" class="btn btn-primary" id="savePhotoBtn">Save Photo →</button>
+      <button type="button" class="btn btn-ghost" id="removePhotoBtn">Remove photo</button>
+    </div>
+    <div id="photoMsg"></div>
+  </div>
+</div>
+
+<!-- ===================== Data management (always visible) ===================== -->
+<div class="card">
+  <h2>Data</h2>
+  <p class="sub-hint" style="margin-top:0;">
+    This data lives only in this browser. To make new items visible to every visitor of the live site,
+    click <strong>Export data</strong> below, then paste the result into <code>js/site-data.js</code> and re-upload the site.
+    <strong>Export data</strong> carries titles, categories, descriptions, paths and small images — it does
+    <em>not</em> include large uploaded video files (those stay in this browser's IndexedDB). Use
+    <strong>Download video files</strong> to grab the actual video files, so you can place them in
+    <code>assets/videos/</code> and reference their path instead, for a permanent, everyone-sees-it upload.
+  </p>
+  <div class="data-actions" style="margin-bottom:12px;">
+    <button class="btn" id="publishZipBtn">⬇ Download site files for upload (ZIP)</button>
+  </div>
+  <p class="sub-hint" id="publishMsg" style="margin-top:0;">
+    <strong>Publish steps:</strong> click the button above → unzip → copy the <code>assets</code> folder and <code>js/site-data.js</code>
+    into your site folder (replace existing) → upload to hosting. After that every visitor (laptop, mobile) sees all images and videos.
+    Needs internet once (loads the ZIP helper).
+  </p>
+  <div class="data-actions">
+    <button class="btn btn-ghost" id="exportBtn">Export data ↓</button>
+    <button class="btn btn-ghost" id="importBtn">Import data ↑</button>
+    <input type="file" id="importFile" accept="application/json" style="display:none;">
+    <button class="btn btn-ghost" id="downloadVideosBtn">Download video files ↓</button>
+    <button class="btn btn-ghost" id="resetBtn">Reset to defaults</button>
+  </div>
+</div>
+
+<footer class="foot">Kaviyarasan V — admin panel · <a class="home-link" href="index.html?preview=1">Back to site</a></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="js/site-data.js"></script>
+<script src="js/storage.js"></script>
+<script>
+/* ---------------------------------------------------------
+   Tabs
+--------------------------------------------------------- */
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+async function refreshStorageUsage(){
+  document.getElementById('storageUsage').textContent =
+    'Currently using about ' + formatBytes(KVStore.usageBytes()) + " of this browser's storage (excluding uploaded videos below).";
+  const est = await storageEstimate();
+  const note = document.getElementById('quotaNote');
+  if (est && est.quota){
+    const free = est.quota - est.usage;
+    note.style.display = 'block';
+    note.textContent = 'This browser/device has roughly ' + formatBytes(free) + ' of free storage available for video uploads (estimate — actual limit can be lower, especially on mobile).';
+  } else {
+    note.style.display = 'none';
+  }
+}
+
+function showMsg(el, text, ok){
+  el.textContent = text;
+  el.className = 'show ' + (ok ? 'ok' : 'err');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 3200);
+}
+
+function wireFileDrop(dropEl, labelEl, inputEl, onFile){
+  inputEl.addEventListener('change', async () => {
+    const file = inputEl.files[0];
+    if (!file) return;
+    dropEl.classList.add('has-file');
+    labelEl.textContent = file.name;
+    await onFile(file);
+  });
+}
+
+/* ---------------------------------------------------------
+   Poster / Work
+--------------------------------------------------------- */
+const workForm = document.getElementById('workForm');
+const workTable = document.getElementById('workTable');
+const workMsg = document.getElementById('workMsg');
+let workImageData = ''; // data URL from upload, if any
+
+const workCategorySel = document.getElementById('work_category');
+const workCategoryOther = document.getElementById('work_category_other');
+workCategorySel.addEventListener('change', () => {
+  workCategoryOther.style.display = (workCategorySel.value === '__other__') ? 'block' : 'none';
+});
+
+wireFileDrop(
+  document.getElementById('workDrop'),
+  document.getElementById('workFileLabel'),
+  document.getElementById('work_image_file'),
+  async (file) => {
+    try{
+      workImageData = await fileToResizedDataURL(file, 1000, 0.82);
+    }catch(e){ showMsg(workMsg, e.message, false); }
+  }
+);
+
+function resetWorkForm(){
+  workForm.reset();
+  document.getElementById('work_id').value = '';
+  workImageData = '';
+  workCategoryOther.style.display = 'none';
+  document.getElementById('workDrop').classList.remove('has-file');
+  document.getElementById('workFileLabel').textContent = 'Choose an image, or drag one here';
+  document.getElementById('workFormTitle').textContent = 'Add a new work item';
+  document.getElementById('workSubmitBtn').textContent = 'Add Work →';
+  document.getElementById('workCancelBtn').style.display = 'none';
+}
+
+document.getElementById('workCancelBtn').addEventListener('click', resetWorkForm);
+
+workForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const id = document.getElementById('work_id').value;
+  const category = workCategorySel.value === '__other__'
+    ? (workCategoryOther.value.trim() || 'Other')
+    : workCategorySel.value;
+  const imagePath = document.getElementById('work_image_path').value.trim();
+  const image = workImageData || imagePath || 'assets/img/poster-placeholder.svg';
+
+  const item = {
+    id: id || kvUid(),
+    title: document.getElementById('work_title').value.trim(),
+    category,
+    image,
+    description: document.getElementById('work_description').value.trim()
+  };
+  if (!item.title){ showMsg(workMsg, 'Title is required.', false); return; }
+
+  try{
+    const items = KVStore.getWork();
+    const idx = items.findIndex(x => x.id === id);
+    if (idx >= 0) items[idx] = item; else items.push(item);
+    KVStore.setWork(items);
+    showMsg(workMsg, 'Saved.', true);
+    resetWorkForm();
+    renderWorkTable();
+    refreshStorageUsage();
+  }catch(err){ showMsg(workMsg, err.message, false); }
+});
+
+function renderWorkTable(){
+  const items = KVStore.getWork();
+  workTable.innerHTML = '';
+  if (!items.length){
+    workTable.innerHTML = '<tr class="empty-row"><td colspan="4">No work items yet — add one above.</td></tr>';
+    return;
+  }
+  items.forEach(item => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="thumb-cell"><img src="${item.image}" alt=""></td>
+      <td>${escapeHtml(item.title)}</td>
+      <td>${escapeHtml(item.category || '')}</td>
+      <td class="row-actions">
+        <button class="mini-btn" data-edit="${item.id}">Edit</button>
+        <button class="mini-btn danger" data-del="${item.id}">Delete</button>
+      </td>`;
+    workTable.appendChild(tr);
+  });
+}
+
+workTable.addEventListener('click', (e) => {
+  const editId = e.target.dataset.edit;
+  const delId = e.target.dataset.del;
+  if (editId){
+    const item = KVStore.getWork().find(x => x.id === editId);
+    if (!item) return;
+    document.getElementById('work_id').value = item.id;
+    document.getElementById('work_title').value = item.title || '';
+    document.getElementById('work_description').value = item.description || '';
+    document.getElementById('work_image_path').value = (item.image || '').startsWith('data:') ? '' : (item.image || '');
+    workImageData = (item.image || '').startsWith('data:') ? item.image : '';
+    const knownCats = ['Posters','Branding','Thumbnails','Social Media','Flyers'];
+    if (knownCats.includes(item.category)){
+      workCategorySel.value = item.category;
+      workCategoryOther.style.display = 'none';
+    } else {
+      workCategorySel.value = '__other__';
+      workCategoryOther.value = item.category || '';
+      workCategoryOther.style.display = 'block';
+    }
+    document.getElementById('workFormTitle').textContent = 'Edit work item';
+    document.getElementById('workSubmitBtn').textContent = 'Save changes →';
+    document.getElementById('workCancelBtn').style.display = 'inline-block';
+    document.getElementById('panel-work').scrollIntoView({ behavior: 'smooth' });
+  } else if (delId){
+    if (!confirm('Delete this item?')) return;
+    KVStore.setWork(KVStore.getWork().filter(x => x.id !== delId));
+    renderWorkTable();
+    refreshStorageUsage();
+  }
+});
+
+/* ---------------------------------------------------------
+   Videos
+--------------------------------------------------------- */
+const videoForm = document.getElementById('videoForm');
+const videoTable = document.getElementById('videoTable');
+const videoMsg = document.getElementById('videoMsg');
+const videoSizeNote = document.getElementById('videoSizeNote');
+let pendingVideoFile = null;   // File object — not read into memory until submit
+let pendingVideoRemoved = false; // true if editing and the existing uploaded file should be dropped
+let thumbFileData = '';
+
+// Video file: just note the File reference + its size. The actual bytes
+// are only streamed into IndexedDB when the form is submitted, so picking
+// an 800MB file doesn't freeze the page.
+document.getElementById('video_file').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  pendingVideoFile = file;
+  pendingVideoRemoved = false;
+  document.getElementById('videoDrop').classList.add('has-file');
+  document.getElementById('videoFileLabel').textContent = file.name;
+  videoSizeNote.style.display = 'block';
+  videoSizeNote.textContent = 'Selected: ' + formatBytes(file.size) + ' — saved when you click "Add Video".';
+});
+
+wireFileDrop(
+  document.getElementById('thumbDrop'),
+  document.getElementById('thumbFileLabel'),
+  document.getElementById('thumb_file'),
+  async (file) => {
+    try{
+      thumbFileData = await fileToResizedDataURL(file, 900, 0.82);
+    }catch(e){ showMsg(videoMsg, e.message, false); }
+  }
+);
+
+function resetVideoForm(){
+  videoForm.reset();
+  document.getElementById('video_id').value = '';
+  document.getElementById('video_category').value = 'Reel';
+  pendingVideoFile = null;
+  pendingVideoRemoved = false;
+  thumbFileData = '';
+  ['videoDrop','thumbDrop'].forEach(id => document.getElementById(id).classList.remove('has-file'));
+  document.getElementById('videoFileLabel').textContent = 'Choose a video file, or drag one here';
+  document.getElementById('thumbFileLabel').textContent = 'Choose a thumbnail, or drag one here';
+  videoSizeNote.style.display = 'none';
+  document.getElementById('videoFormTitle').textContent = 'Add a new video';
+  document.getElementById('videoSubmitBtn').textContent = 'Add Video →';
+  document.getElementById('videoCancelBtn').style.display = 'none';
+}
+document.getElementById('videoCancelBtn').addEventListener('click', resetVideoForm);
+
+videoForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const id = document.getElementById('video_id').value || kvUid();
+  const videoPath = document.getElementById('video_path').value.trim();
+  const thumbPath = document.getElementById('thumb_path').value.trim();
+  const existing = document.getElementById('video_id').value
+    ? KVStore.getVideos().find(x => x.id === id)
+    : null;
+
+  let video_url = videoPath || (existing && !pendingVideoRemoved ? existing.video_url : '') || '';
+  if (!pendingVideoFile && !video_url){ showMsg(videoMsg, 'Add a video file or a link/path.', false); return; }
+
+  const submitBtn = document.getElementById('videoSubmitBtn');
+  const originalLabel = submitBtn.textContent;
+
+  if (pendingVideoFile){
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving video…';
+    showMsg(videoMsg, 'Saving video to this browser — large files can take a moment…', true);
+    try{
+      await KVMedia.putVideo(id, pendingVideoFile);
+      video_url = makeIdbRef(id);
+    }catch(err){
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalLabel;
+      showMsg(videoMsg, err.message || 'Could not save the video — storage may be full.', false);
+      return;
+    }
+  }
+
+  const item = {
+    id,
+    title: document.getElementById('video_title').value.trim(),
+    category: document.getElementById('video_category').value.trim() || 'Reel',
+    video_url,
+    poster_url: thumbFileData || thumbPath || (existing ? existing.poster_url : '') || '',
+    duration: document.getElementById('video_duration').value.trim(),
+    description: ''
+  };
+  if (!item.title){
+    submitBtn.disabled = false; submitBtn.textContent = originalLabel;
+    showMsg(videoMsg, 'Title is required.', false); return;
+  }
+
+  try{
+    const items = KVStore.getVideos();
+    const idx = items.findIndex(x => x.id === id);
+    if (idx >= 0) items[idx] = item; else items.push(item);
+    KVStore.setVideos(items);
+    showMsg(videoMsg, 'Saved.', true);
+    resetVideoForm();
+    renderVideoTable();
+    refreshStorageUsage();
+  }catch(err){ showMsg(videoMsg, err.message, false); }
+  finally{ submitBtn.disabled = false; submitBtn.textContent = originalLabel; }
+});
+
+function renderVideoTable(){
+  const items = KVStore.getVideos();
+  videoTable.innerHTML = '';
+  if (!items.length){
+    videoTable.innerHTML = '<tr class="empty-row"><td colspan="4">No videos yet — add one above.</td></tr>';
+    return;
+  }
+  items.forEach(item => {
+    const thumb = item.poster_url ? `<img src="${item.poster_url}" alt="">` : '🎬';
+    const badge = isIdbRef(item.video_url) ? ' <span class="sub-hint" style="display:inline;">(uploaded file)</span>' : '';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="thumb-cell">${thumb}</td>
+      <td>${escapeHtml(item.title)}${badge}</td>
+      <td>${escapeHtml(item.category || '')}</td>
+      <td class="row-actions">
+        <button class="mini-btn" data-edit="${item.id}">Edit</button>
+        <button class="mini-btn danger" data-del="${item.id}">Delete</button>
+      </td>`;
+    videoTable.appendChild(tr);
+  });
+}
+
+videoTable.addEventListener('click', async (e) => {
+  const editId = e.target.dataset.edit;
+  const delId = e.target.dataset.del;
+  if (editId){
+    const item = KVStore.getVideos().find(x => x.id === editId);
+    if (!item) return;
+    document.getElementById('video_id').value = item.id;
+    document.getElementById('video_title').value = item.title || '';
+    document.getElementById('video_category').value = item.category || 'Reel';
+    document.getElementById('video_duration').value = item.duration || '';
+    pendingVideoFile = null;
+    pendingVideoRemoved = false;
+    if (isIdbRef(item.video_url)){
+      document.getElementById('video_path').value = '';
+      document.getElementById('videoDrop').classList.add('has-file');
+      document.getElementById('videoFileLabel').textContent = 'Existing uploaded file (choose a new one to replace it)';
+    } else {
+      document.getElementById('video_path').value = item.video_url || '';
+      document.getElementById('videoDrop').classList.remove('has-file');
+      document.getElementById('videoFileLabel').textContent = 'Choose a video file, or drag one here';
+    }
+    document.getElementById('thumb_path').value = (item.poster_url || '').startsWith('data:') ? '' : (item.poster_url || '');
+    thumbFileData = (item.poster_url || '').startsWith('data:') ? item.poster_url : '';
+    document.getElementById('videoFormTitle').textContent = 'Edit video';
+    document.getElementById('videoSubmitBtn').textContent = 'Save changes →';
+    document.getElementById('videoCancelBtn').style.display = 'inline-block';
+    document.getElementById('panel-videos').scrollIntoView({ behavior: 'smooth' });
+  } else if (delId){
+    if (!confirm('Delete this video?')) return;
+    const item = KVStore.getVideos().find(x => x.id === delId);
+    if (item && isIdbRef(item.video_url)) await KVMedia.deleteVideo(idbRefId(item.video_url));
+    KVStore.setVideos(KVStore.getVideos().filter(x => x.id !== delId));
+    renderVideoTable();
+    refreshStorageUsage();
+  }
+});
+
+/* ---------------------------------------------------------
+   Profile photo
+--------------------------------------------------------- */
+let photoFileData = '';
+const photoMsg = document.getElementById('photoMsg');
+wireFileDrop(
+  document.getElementById('photoDrop'),
+  document.getElementById('photoFileLabel'),
+  document.getElementById('photo_file'),
+  async (file) => {
+    try{
+      photoFileData = await fileToResizedDataURL(file, 1000, 0.85);
+      document.getElementById('currentPhotoImg').src = photoFileData;
+    }catch(e){ showMsg(photoMsg, e.message, false); }
+  }
+);
+
+document.getElementById('savePhotoBtn').addEventListener('click', () => {
+  if (!photoFileData){ showMsg(photoMsg, 'Choose a photo first.', false); return; }
+  try{
+    KVStore.setProfilePhoto(photoFileData);
+    showMsg(photoMsg, 'Saved.', true);
+    refreshStorageUsage();
+  }catch(err){ showMsg(photoMsg, err.message, false); }
+});
+document.getElementById('removePhotoBtn').addEventListener('click', () => {
+  KVStore.setProfilePhoto(null);
+  photoFileData = '';
+  document.getElementById('currentPhotoImg').src = (typeof SITE_DEFAULT_PHOTO !== 'undefined') ? SITE_DEFAULT_PHOTO : 'assets/img/kaviyarasan.jpg';
+  document.getElementById('photoDrop').classList.remove('has-file');
+  document.getElementById('photoFileLabel').textContent = 'Choose a photo, or drag one here';
+  showMsg(photoMsg, 'Removed — home page will use the default photo.', true);
+  refreshStorageUsage();
+});
+
+function loadCurrentPhoto(){
+  const saved = KVStore.getProfilePhoto();
+  document.getElementById('currentPhotoImg').src = saved || (typeof SITE_DEFAULT_PHOTO !== 'undefined' ? SITE_DEFAULT_PHOTO : 'assets/img/kaviyarasan.jpg');
+}
+
+
+/* ---------------------------------------------------------
+   One-click publish package: ZIP with site-data.js + real files
+--------------------------------------------------------- */
+function dataUrlToBlob(u){
+  const i = u.indexOf(',');
+  const mime = (u.slice(5, i).split(';')[0]) || 'application/octet-stream';
+  const bin = atob(u.slice(i + 1));
+  const arr = new Uint8Array(bin.length);
+  for (let k = 0; k < bin.length; k++) arr[k] = bin.charCodeAt(k);
+  return new Blob([arr], { type: mime });
+}
+function extFromMime(m){
+  if (!m) return 'bin';
+  if (m.includes('jpeg')) return 'jpg';
+  if (m.includes('png')) return 'png';
+  if (m.includes('webp')) return 'webp';
+  if (m.includes('gif')) return 'gif';
+  if (m.includes('svg')) return 'svg';
+  if (m.includes('webm')) return 'webm';
+  if (m.includes('quicktime')) return 'mov';
+  if (m.includes('mp4')) return 'mp4';
+  return 'bin';
+}
+document.getElementById('publishZipBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('publishZipBtn');
+  if (typeof JSZip === 'undefined'){ alert('ZIP helper could not load. Connect to the internet and reload this page.'); return; }
+  const old = btn.textContent; btn.disabled = true; btn.textContent = 'Preparing ZIP… please wait';
+  try{
+    const zip = new JSZip();
+    const work = JSON.parse(JSON.stringify(KVStore.hasWork() ? KVStore.getWork() : SITE_DEFAULT_WORK));
+    const videos = JSON.parse(JSON.stringify(KVStore.hasVideos() ? KVStore.getVideos() : SITE_DEFAULT_VIDEOS));
+    let photo = SITE_DEFAULT_PHOTO;
+
+    const saved = KVStore.getProfilePhoto();
+    if (saved && saved.startsWith('data:')){
+      const b = dataUrlToBlob(saved); const path = 'assets/img/profile.' + extFromMime(b.type);
+      zip.file(path, b); photo = path;
+    } else if (saved) photo = saved;
+
+    for (let i = 0; i < work.length; i++){
+      const w = work[i];
+      if (w.image && w.image.startsWith('data:')){
+        const b = dataUrlToBlob(w.image); const path = 'assets/img/work-' + (i + 1) + '.' + extFromMime(b.type);
+        zip.file(path, b); w.image = path;
+      }
+    }
+    for (let i = 0; i < videos.length; i++){
+      const v = videos[i]; const n = String(i + 1).padStart(2, '0');
+      if (v.poster_url && v.poster_url.startsWith('data:')){
+        const b = dataUrlToBlob(v.poster_url); const path = 'assets/img/reels/reel-' + n + '-poster.' + extFromMime(b.type);
+        zip.file(path, b); v.poster_url = path;
+      }
+      if (isIdbRef(v.video_url)){
+        const blob = await KVMedia.getVideo(idbRefId(v.video_url));
+        if (blob){ const path = 'assets/videos/reel-' + n + '.' + extFromMime(blob.type); zip.file(path, blob); v.video_url = path; }
+        else v.video_url = '#';
+      } else if (v.video_url && v.video_url.startsWith('data:video/')){
+        const b = dataUrlToBlob(v.video_url); const path = 'assets/videos/reel-' + n + '.' + extFromMime(b.type);
+        zip.file(path, b); v.video_url = path;
+      }
+    }
+
+    const out = "/* Generated by admin.html — published content shown to EVERY visitor. */\n\n" +
+      "const SITE_DEFAULT_PHOTO = " + JSON.stringify(photo) + ";\n\n" +
+      "const SITE_DEFAULT_WORK = " + JSON.stringify(work, null, 2) + ";\n\n" +
+      "const SITE_DEFAULT_VIDEOS = " + JSON.stringify(videos, null, 2) + ";\n";
+    zip.file('js/site-data.js', out);
+
+    const blob = await zip.generateAsync({ type: 'blob', compression: 'STORE' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'portfolio-upload.zip';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 8000);
+  }catch(e){
+    alert('Could not build the ZIP: ' + e.message + '\n(Very large videos may not fit in memory — try a smaller file or use a path/link.)');
+  }
+  btn.disabled = false; btn.textContent = old;
+});
+
+/* ---------------------------------------------------------
+   Export / Import / Reset
+--------------------------------------------------------- */
+document.getElementById('exportBtn').addEventListener('click', () => {
+  const blob = new Blob([KVStore.exportAll()], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'portfolio-data.json';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+const importFileInput = document.getElementById('importFile');
+document.getElementById('importBtn').addEventListener('click', () => importFileInput.click());
+importFileInput.addEventListener('change', async () => {
+  const file = importFileInput.files[0];
+  if (!file) return;
+  try{
+    const text = await file.text();
+    KVStore.importAll(text);
+    renderWorkTable();
+    renderVideoTable();
+    loadCurrentPhoto();
+    refreshStorageUsage();
+    alert('Data imported. Note: this only restores titles/categories/paths/small images — any uploaded video files referenced as "idb:…" need to already exist in this browser\'s storage, or be re-uploaded.');
+  }catch(e){ alert('Could not import that file: ' + e.message); }
+  importFileInput.value = '';
+});
+
+document.getElementById('downloadVideosBtn').addEventListener('click', async () => {
+  const items = KVStore.getVideos().filter(v => isIdbRef(v.video_url));
+  if (!items.length){ alert('No uploaded video files to download — everything here is already a path/link.'); return; }
+  for (const item of items){
+    try{
+      const blob = await KVMedia.getVideo(idbRefId(item.video_url));
+      if (!blob) continue;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = (item.title || 'video').replace(/[^a-z0-9\-_. ]/gi, '_') + guessExtFromType(blob.type);
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      await new Promise(r => setTimeout(r, 400)); // stagger multiple downloads
+    }catch(e){ /* skip on error, continue with the rest */ }
+  }
+});
+
+document.getElementById('resetBtn').addEventListener('click', async () => {
+  if (!confirm('Reset all admin-saved data on this browser, including uploaded video files? This cannot be undone.')) return;
+  const idbVideos = KVStore.getVideos().filter(v => isIdbRef(v.video_url));
+  for (const v of idbVideos){ await KVMedia.deleteVideo(idbRefId(v.video_url)); }
+  KVStore.resetAll();
+  resetWorkForm();
+  resetVideoForm();
+  photoFileData = '';
+  renderWorkTable();
+  renderVideoTable();
+  loadCurrentPhoto();
+  refreshStorageUsage();
+});
+
+function escapeHtml(s){
+  return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ---------------------------------------------------------
+   Init
+--------------------------------------------------------- */
+renderWorkTable();
+renderVideoTable();
+loadCurrentPhoto();
+refreshStorageUsage();
+</script>
+</body>
+</html>
